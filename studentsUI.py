@@ -2,11 +2,16 @@ import wx
 import wx.lib.agw.aquabutton as AB
 import wx.lib.agw.gradientbutton as GB
 from pubsub import pub
+import client_protocol
 
 class MyFrame(wx.Frame):
-    def __init__(self, parent=None):
+    def __init__(self, comm, mac, parent=None):
         super(MyFrame, self).__init__(parent, title="login", size=(500,500))
+        self.comm = comm
+        self.mac = mac
+        self.user_name = ""
         self.initUI()
+
     def initUI(self):
         # create status bar
         self.statusbar = self.CreateStatusBar(1)
@@ -37,8 +42,6 @@ class MainPanel(wx.Panel):
         self.login.Show()
         self.SetSizer(v_box)
         self.Layout()
-
-
 
 
 
@@ -97,6 +100,27 @@ class StudentLoginPanel(wx.Panel):
         self.SetSizer(v_box)
         self.Layout()
         self.Hide()
+
+        pub.subscribe(self.handle_login_ans, "login")
+
+
+
+    def handle_login_ans(self, status):
+        print("in handle_login_ans")
+        print(status)
+        if status == "fail":
+            self.frame.SetStatusText("worng ID - try again")
+        else:
+            self.frame.user_name = status
+            self.frame.SetStatusText("")
+            print("user_name:", self.frame.user_name)
+            #wx.CallAfter(pub.sendMessage, "user_name", username= status)
+            self.Hide()
+            self.parent.ui.Show()
+
+            self.parent.Layout()
+
+
             
     def handle_login(self, event):
         
@@ -108,12 +132,14 @@ class StudentLoginPanel(wx.Panel):
         elif not id.isalnum():
             self.frame.SetStatusText("ID must be digits")
         else:
-            #wx.CallAfter(pub.sendMessage, "login", message=id)
-            pub.sendMessage("login", message= id)
-            print("send id")
-            self.Hide()
-            self.parent.ui.Show()
-            self.parent.Layout()
+            msg = client_protocol.buildLoginMsg(id, self.frame.mac)
+            self.frame.comm.send(msg)
+            # #wx.CallAfter(pub.sendMessage, "login", message=id)
+            # pub.sendMessage("login", message= id)
+            # print("send id")
+            # self.Hide()
+            # self.parent.ui.Show()
+            # self.parent.Layout()
 
     def on_send_and_slose(self, event):
         """
@@ -137,12 +163,16 @@ class StudentUI(wx.Panel):
         self.SetBackgroundColour(wx.LIGHT_GREY)
         #self.SetBackgroundColour(wx.BLUE)
         v_box = wx.BoxSizer(wx.VERTICAL)
-
+        #pub.subscribe(self.getUser_name, "user_name")
+        """
         # title
-        title = wx.StaticText(self,-1, label="Hello -------")
+        print("user_name in StudentUi", self.frame.user_name)
+        text = "hello " + self.frame.user_name
+        title = wx.StaticText(self,-1, label=text)
         titlefont = wx.Font(22, wx.DECORATIVE, wx.NORMAL, wx.NORMAL)
         title.SetForegroundColour(wx.BLACK)
         title.SetFont(titlefont)
+        """
 
 
         # the chat button
@@ -160,7 +190,7 @@ class StudentUI(wx.Panel):
 
 
 
-        v_box.Add(title, 0, wx.CENTER | wx.TOP, 5)
+        #v_box.Add(title, 0, wx.CENTER | wx.TOP, 5)
         v_box.AddSpacer(10)
         v_box.AddSpacer(10)
         v_box.Add(chatButton, 0, wx.CENTER | wx.ALL, 5)
@@ -188,7 +218,7 @@ class StudentUI(wx.Panel):
         """
         self.frame.SetStatusText("your request was sent, waiting for the manager....")
 
-
-ex = wx.App()
-MyFrame(None)
-ex.MainLoop()
+if __name__ == '__main__':
+    ex = wx.App()
+    MyFrame(None)
+    ex.MainLoop()

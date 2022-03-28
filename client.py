@@ -6,6 +6,7 @@ import pygame
 import pyautogui
 import client_protocol
 import Screen_shot
+
 class Client:
     def __init__(self, ip, port, clientQ):
         """
@@ -103,6 +104,7 @@ class Client:
                 # if can't receive from the server, stop threading
                 self.running = False
             else:
+                print(data)
                 # insert the message to the msg_q
                 self.clientQ.put(data)
 

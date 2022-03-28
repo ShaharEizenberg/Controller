@@ -3,6 +3,10 @@ import queue
 from pubsub import pub
 from uuid import getnode
 import client_protocol
+import setting
+from studentsUI import  *
+import client_protocol
+import threading
 
 def get_macAddress():
     """ returns  mac address"""
@@ -17,26 +21,48 @@ def handle_student_login(id):
     """
     print("check in function")
     msg = client_protocol.buildLoginMsg(id, get_macAddress())
-    client1.send(msg)
+    client.send(msg)
 
-pub.subscribe(handle_student_login, "login")
 
-serverQ = queue.Queue()
+
+
+
+
+
+def handle_recv_q(rcv_q):
+    print("in handle_recv_q")
+    while True:
+        data = rcv_q.get()
+        command, status = client_protocol.break_msg(data)
+        if command == "login":
+            print("handle recv ", status)
+            wx.CallAfter(pub.sendMessage, "login", status=status)
+
+
+
+
+
+
 clientQ = queue.Queue()
+client = Client(setting.SERVER_IP, setting.GENERAL_PORT, clientQ)
 
 
-client1 = Client("192.168.1.30", 2000, clientQ)
-while not client1.running:
-    pass
+# while not client1.running:
+#     pass
 
-#pub.sendMessage("panel_listener", message=msg)
-pub.subscribe(handle_student_login, "login")
-msg = ""  # input("enter msg or exit to quit ").lower()
-while not msg == "exit":
-    #print(f"client get back: {clientQ.get()}")
-    #msg = input("Enter msg or exit to quit ").lower()
-    pass
-
-client1.close_client()
+# #pub.sendMessage("panel_listener", message=msg)
+# pub.subscribe(handle_student_login, "login")
+# msg = ""  # input("enter msg or exit to quit ").lower()
+# while not msg == "exit":
+#     #print(f"client get back: {clientQ.get()}")
+#     #msg = input("Enter msg or exit to quit ").lower()
+#     pass
+#
+# client1.close_client()
 #main_server.close_server()
-print("end programing")
+# print("end programing")
+threading.Thread(target= handle_recv_q, args= (clientQ,)).start()
+ex = wx.App()
+MyFrame(client,get_macAddress(), None)
+ex.MainLoop()
+client.send(client_protocol.build_exitMsg())

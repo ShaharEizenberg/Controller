@@ -73,7 +73,7 @@ def buildLoginMsg(id, macAdress):
     :param macAdress: the mac address of the students' computer
     :return: loginMsg
     """
-    msg = "03" + id + "#" + macAdress
+    msg = "03" +"#"+ id + "#" + macAdress
     #msg = len(msg) + msg
     return msg
 
@@ -90,4 +90,28 @@ def build_command_succeeded(succeed, command):
     else:
         msg += command + "#" + "00"
     return msg
+
+
+def break_msg(data):
+    '''
+
+    :param data:
+    :return:
+    '''
+    opcode = data[0:2]
+    status = data[3:]
+    print("status: ", status)
+    print(data)
+    command = ""
+    if opcode == "03":
+        command = "login"
+    print("command: ", command)
+    return command, status
+
+def build_exitMsg():
+    """
+
+    :return: an exit message
+    """
+    return "04" + "#" + "exit"
 
