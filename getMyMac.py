@@ -16,5 +16,5 @@ def get_ip():
     s.close()
     return ip
 
-print get_macAddress()
-print get_ip()
+print(get_macAddress())
+print(get_ip())

@@ -57,6 +57,26 @@ class DB:
         self.cursor.execute(sql)
         return not len(self.cursor.fetchall()) == 0
 
+    def get_table(self, table_name):
+        """
+
+        :return:
+        """
+        sql = f"SELECT * FROM {table_name}"
+        self.cursor.execute(sql)
+        print(self.cursor.fetchall())
+        return self.cursor.fetchall()
+
+    def get_macAdresses(self):
+        """
+
+        :return:
+        """
+        sql = f"SELECT macaddress FROM {self.students_status_tbl_name}"
+        self.cursor.execute(sql)
+        print(self.cursor.fetchall())
+        return self.cursor.fetchall()
+
     def _macAddress_exist(self, mac):
         """
         :param id: the mac address of the computer
@@ -286,7 +306,7 @@ class DB:
 if __name__ == '__main__':
 
     # create DB object and sql
-    my_DB = DB("players1.db")
+    my_DB = DB("class_info.db")
 
     print(my_DB.add_user_to_studentStatus("64:00:6A:42:4D:D1", 0, "on", "on"))
     print(my_DB.add_user_to_studentStatus("64:00:6A:42:95:CF", 1, "on", "on"))

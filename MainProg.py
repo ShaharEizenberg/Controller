@@ -7,9 +7,31 @@ import server_protocol
 from pubsub import pub
 import wx
 from teacherUITT import *
+from my_db import *
+
+
+def create_mac_dict(macs):
+    """
+
+    :param macs:
+    :return:
+    """
+    print(macs)
+    mac_parameters = {}
+    for item in macs:
+        print(item)
+        mac_parameters[item[0]] = my_DB.getBy_macAdress(item[0])
+    return mac_parameters
+
+
+my_DB = DB("class_info.db")
+macs = my_DB.get_macAdresses()
+create_mac_dict(macs)
 
 # dictionary of mac address and students parameters
-mac_parameters = {"64:00:6A:42:95:8E": ["0", "on", "on"]}
+#mac_parameters = {"64:00:6A:42:95:8E": ["0", "on", "on"]}
+mac_parameters = create_mac_dict(macs)
+print("mac_parameters: ", mac_parameters)
 mac_name = {"64:00:6A:42:95:8E": "123456789"}
 mac_ip = {"192.168.4.79": "64:00:6A:42:95:8E"}
 # dictionary of mac address, student name
